@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Calculadora SAC e Price</title>
+    <meta
+      name="description"
+      content="Calculadora estática para gerar tabelas de financiamento SAC e Price com valores em R$."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Source+Serif+4:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Financiamento • SAC & Price</p>
+          <h1>Calculadora de Tabelas SAC e Price</h1>
+          <p class="lede">
+            Gere as parcelas com juros por período e acompanhe a evolução do saldo devedor em uma
+            visão limpa e objetiva.
+          </p>
+        </div>
+        <div class="badge">
+          <span>BRL</span>
+          <strong>R$</strong>
+          <small>precisão e clareza</small>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="card form-card">
+          <h2>Entradas</h2>
+          <form id="calc-form" novalidate>
+            <div class="field">
+              <label for="pv">Valor financiado (PV)</label>
+              <div class="input-wrap">
+                <span class="prefix">R$</span>
+                <input
+                  id="pv"
+                  name="pv"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  step="0.01"
+                  placeholder="150000,00"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="rate">Taxa de juros por período (i)</label>
+              <div class="input-wrap">
+                <input
+                  id="rate"
+                  name="rate"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  step="0.0001"
+                  placeholder="1,25"
+                  required
+                />
+                <span class="suffix">%</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="periods">Número de períodos (n)</label>
+              <input
+                id="periods"
+                name="periods"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                step="1"
+                placeholder="24"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <span class="label">Sistema de amortização</span>
+              <div class="radio-group">
+                <label class="radio">
+                  <input type="radio" name="system" value="sac" checked />
+                  <span>SAC</span>
+                </label>
+                <label class="radio">
+                  <input type="radio" name="system" value="price" />
+                  <span>Price</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="primary" type="submit">Calcular tabela</button>
+              <button class="ghost" type="button" id="reset">Limpar</button>
+            </div>
+            <p class="helper" id="form-message" role="status" aria-live="polite"></p>
+          </form>
+        </section>
+
+        <section class="card table-card">
+          <div class="table-header">
+            <div>
+              <h2>Tabela de financiamento</h2>
+              <p class="subtle" id="table-subtitle">
+                Preencha os campos para gerar as parcelas.
+              </p>
+            </div>
+            <div class="pill" id="system-pill">SAC</div>
+          </div>
+          <div class="table-wrap" role="region" aria-live="polite" aria-label="Tabela de financiamento">
+            <table>
+              <thead>
+                <tr>
+                  <th>Período</th>
+                  <th>Saldo inicial</th>
+                  <th>Amortização</th>
+                  <th>Juros</th>
+                  <th>Prestação</th>
+                  <th>Saldo final</th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+                <tr>
+                  <td colspan="6" class="empty">Nenhum cálculo realizado.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <p>
+          Valores arredondados apenas para exibição. Fórmulas conforme SAC e Price (sistema francês).
+        </p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
