@@ -1,94 +1,103 @@
-﻿const form = document.getElementById('calc-form');
-const tbody = document.querySelector('#results-table tbody');
-const summary = document.getElementById('result-summary');
-const errorEl = document.getElementById('error');
-const systemPill = document.getElementById('system-pill');
-const clearBtn = document.getElementById('clear-btn');
+﻿const form = document.querySelector("#calc-form");
+const tableBody = document.querySelector("#table-body");
+const formMessage = document.querySelector("#form-message");
+const resetButton = document.querySelector("#reset") || document.querySelector("#clear-btn");
+const tableSubtitle = document.querySelector("#table-subtitle");
+const systemPill = document.querySelector("#system-pill");
 
-const currencyFormatter = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
 
-const percentFormatter = new Intl.NumberFormat('pt-BR', {
+const percentFormatter = new Intl.NumberFormat("pt-BR", {
   minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
+  maximumFractionDigits: 4,
 });
 
 const EPSILON = 1e-10;
 
-function parseNumber(value) {
-  if (!value) return NaN;
-  let cleaned = String(value).trim();
-  if (!cleaned) return NaN;
-  cleaned = cleaned.replace(/\s/g, '');
-  if (cleaned.includes(',')) {
-    cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+const toNumber = (value) => {
+  if (typeof value === "number") {
+    return value;
   }
-  return Number(cleaned);
-}
+  if (typeof value !== "string") {
+    return Number(value);
+  }
 
-function formatBRL(value) {
+  let normalized = value.trim();
+  if (!normalized) {
+    return NaN;
+  }
+
+  normalized = normalized.replace(/\s/g, "");
+  if (normalized.includes(",")) {
+    normalized = normalized.replace(/\./g, "").replace(",", ".");
+  }
+  return Number(normalized);
+};
+
+const toCurrency = (value) => {
   const safeValue = Math.abs(value) < EPSILON ? 0 : value;
   return currencyFormatter.format(safeValue);
-}
+};
 
-function clearTable() {
-  tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Nenhum cálculo realizado.</td></tr>';
-}
+const buildRow = ({ period, openingBalance, amortization, interest, payment, closingBalance }) => {
+  const row = document.createElement("tr");
+  const cells = [
+    period,
+    toCurrency(openingBalance),
+    toCurrency(amortization),
+    toCurrency(interest),
+    toCurrency(payment),
+    toCurrency(closingBalance),
+  ];
 
-function setError(message) {
-  errorEl.textContent = message;
-}
+  cells.forEach((cell) => {
+    const td = document.createElement("td");
+    td.textContent = cell;
+    row.appendChild(td);
+  });
 
-function updateSummary({ system, pv, rate, periods }) {
-  const systemLabel = system === 'sac' ? 'SAC' : 'Price';
-  summary.textContent = `${systemLabel} • PV ${formatBRL(pv)} • i ${percentFormatter.format(rate)}% • n ${periods}`;
-  systemPill.textContent = systemLabel;
-}
+  return row;
+};
 
-function buildRow({ period, openingBalance, amortization, interest, payment, closingBalance }) {
-  return `
-    <tr>
-      <td>${period}</td>
-      <td>${formatBRL(openingBalance)}</td>
-      <td>${formatBRL(amortization)}</td>
-      <td>${formatBRL(interest)}</td>
-      <td>${formatBRL(payment)}</td>
-      <td>${formatBRL(closingBalance)}</td>
-    </tr>
-  `;
-}
-
-function calculateSAC({ pv, rate, periods }) {
+const calculateSAC = (pv, rate, periods) => {
   const amortization = pv / periods;
-  let balance = pv;
   const rows = [];
+  let openingBalance = pv;
 
   for (let period = 1; period <= periods; period += 1) {
-    const interest = balance * rate;
+    const interest = openingBalance * rate;
     const payment = amortization + interest;
-    const closingBalance = balance - amortization;
+    let closingBalance = openingBalance - amortization;
+
+    if (period === periods || Math.abs(closingBalance) < EPSILON) {
+      closingBalance = 0;
+    }
 
     rows.push({
       period,
-      openingBalance: balance,
+      openingBalance,
       amortization,
       interest,
       payment,
       closingBalance,
     });
 
-    balance = closingBalance;
+    openingBalance = closingBalance;
   }
 
   return rows;
-}
+};
 
-function calculatePrice({ pv, rate, periods }) {
+const calculatePrice = (pv, rate, periods) => {
+  const rows = [];
+  let openingBalance = pv;
   let payment;
+
   if (rate === 0) {
     payment = pv / periods;
   } else {
@@ -96,76 +105,99 @@ function calculatePrice({ pv, rate, periods }) {
     payment = pv * ((rate * factor) / (factor - 1));
   }
 
-  let balance = pv;
-  const rows = [];
-
   for (let period = 1; period <= periods; period += 1) {
-    const interest = balance * rate;
+    const interest = openingBalance * rate;
     const amortization = payment - interest;
-    const closingBalance = balance - amortization;
+    let closingBalance = openingBalance - amortization;
+
+    if (period === periods || Math.abs(closingBalance) < EPSILON) {
+      closingBalance = 0;
+    }
 
     rows.push({
       period,
-      openingBalance: balance,
+      openingBalance,
       amortization,
       interest,
       payment,
       closingBalance,
     });
 
-    balance = closingBalance;
+    openingBalance = closingBalance;
   }
 
   return rows;
-}
+};
 
-function renderTable(rows) {
-  tbody.innerHTML = rows.map(buildRow).join('');
-}
+const renderRows = (rows) => {
+  tableBody.innerHTML = "";
 
-form.addEventListener('submit', (event) => {
-  event.preventDefault();
-  setError('');
+  if (!rows.length) {
+    const empty = document.createElement("tr");
+    empty.innerHTML = '<td colspan="6" class="empty">Nenhum cálculo realizado.</td>';
+    tableBody.appendChild(empty);
+    return;
+  }
 
-  const pv = parseNumber(form.pv.value);
-  const ratePercent = parseNumber(form.rate.value);
-  const periods = Number(form.periods.value);
+  rows.forEach((row) => {
+    tableBody.appendChild(buildRow(row));
+  });
+};
 
+const updateSubtitle = (system, pv, ratePercent, periods) => {
+  const systemLabel = system === "sac" ? "SAC" : "Price";
+  systemPill.textContent = systemLabel;
+  tableSubtitle.textContent = `Sistema ${systemLabel} • PV ${toCurrency(pv)} • i ${percentFormatter.format(
+    ratePercent
+  )}% • n ${periods}`;
+};
+
+const validateInputs = (pv, ratePercent, periods) => {
   if (!Number.isFinite(pv) || pv <= 0) {
-    setError('Informe um valor financiado válido.');
-    clearTable();
-    return;
+    return "Informe um valor financiado válido.";
   }
-
   if (!Number.isFinite(ratePercent) || ratePercent < 0) {
-    setError('Informe uma taxa de juros válida.');
-    clearTable();
+    return "Informe uma taxa de juros válida.";
+  }
+  if (!Number.isInteger(periods) || periods <= 0) {
+    return "Informe um número inteiro de períodos.";
+  }
+  return "";
+};
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const formData = new FormData(form);
+  const pv = toNumber(formData.get("pv"));
+  const ratePercent = toNumber(formData.get("rate"));
+  const periods = toNumber(formData.get("periods"));
+  const system = formData.get("system");
+
+  const error = validateInputs(pv, ratePercent, periods);
+  if (error) {
+    formMessage.textContent = error;
+    renderRows([]);
+    tableSubtitle.textContent = "Preencha os campos para gerar as parcelas.";
     return;
   }
 
-  if (!Number.isInteger(periods) || periods <= 0) {
-    setError('Informe um número inteiro de períodos.');
-    clearTable();
-    return;
-  }
+  formMessage.textContent = "";
 
   const rate = ratePercent / 100;
-  const system = form.system.value;
-
-  const rows = system === 'sac'
-    ? calculateSAC({ pv, rate, periods })
-    : calculatePrice({ pv, rate, periods });
-
-  renderTable(rows);
-  updateSummary({ system, pv, rate: ratePercent, periods });
+  const rows = system === "sac" ? calculateSAC(pv, rate, periods) : calculatePrice(pv, rate, periods);
+  renderRows(rows);
+  updateSubtitle(system, pv, ratePercent, periods);
 });
 
-clearBtn.addEventListener('click', () => {
-  form.reset();
-  setError('');
-  summary.textContent = 'Preencha os campos para gerar a tabela.';
-  systemPill.textContent = 'SAC';
-  clearTable();
-});
+if (resetButton) {
+  resetButton.addEventListener("click", () => {
+    form.reset();
+    formMessage.textContent = "";
+    renderRows([]);
+    tableSubtitle.textContent = "Preencha os campos para gerar as parcelas.";
+    systemPill.textContent = "SAC";
+  });
+}
 
-clearTable();
+renderRows([]);
