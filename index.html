@@ -1,0 +1,196 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Calculadora SAC & Price</title>
+    <meta
+      name="description"
+      content="Calculadora estatica para gerar tabelas de financiamento SAC e Price com valores em reais e arredondamento de 2 casas na exibicao."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="container hero-content">
+        <div>
+          <p class="eyebrow">Financiamentos com clareza - SAC & Price</p>
+          <h1>Calculadora SAC & Price</h1>
+          <p class="lead">
+            Compare rapidamente as tabelas de amortizacao e acompanhe a evolucao
+            do saldo devedor e das parcelas em reais.
+          </p>
+        </div>
+        <div class="hero-card">
+          <div class="hero-metric">
+            <span>Precisao de calculo</span>
+            <strong>Alta</strong>
+          </div>
+          <div class="hero-metric">
+            <span>Formato</span>
+            <strong>BRL</strong>
+          </div>
+          <div class="hero-metric">
+            <span>Modelo</span>
+            <strong>SAC / Price</strong>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="card" aria-labelledby="inputs-title">
+        <div class="section-header">
+          <div>
+            <p class="section-kicker">Entrada</p>
+            <h2 id="inputs-title">Parametros do financiamento</h2>
+          </div>
+          <p class="section-note">
+            Informe valores por periodo. Os resultados sao arredondados somente
+            na exibicao.
+          </p>
+        </div>
+        <form id="calc-form" class="form-grid" novalidate>
+          <label class="field">
+            <span>Valor financiado (PV)</span>
+            <input
+              id="pv"
+              name="pv"
+              type="text"
+              inputmode="decimal"
+              placeholder="Ex: 250.000,00"
+              required
+            />
+          </label>
+          <label class="field">
+            <span>Taxa de juros por periodo (i)</span>
+            <input
+              id="rate"
+              name="rate"
+              type="text"
+              inputmode="decimal"
+              placeholder="Ex: 1,25"
+              required
+            />
+            <span class="hint">Digite em %</span>
+          </label>
+          <label class="field">
+            <span>Numero de periodos (n)</span>
+            <input
+              id="periods"
+              name="periods"
+              type="number"
+              min="1"
+              step="1"
+              placeholder="Ex: 24"
+              required
+            />
+          </label>
+          <div class="field">
+            <span>Sistema</span>
+            <div class="segmented" role="radiogroup" aria-label="Sistema de amortizacao">
+              <label>
+                <input type="radio" name="system" value="sac" checked />
+                <span>SAC</span>
+              </label>
+              <label>
+                <input type="radio" name="system" value="price" />
+                <span>Price</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Calcular tabela</button>
+            <button type="button" class="btn-ghost" id="clear-btn">Limpar</button>
+          </div>
+          <p id="form-error" class="form-error" role="alert" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card" aria-labelledby="summary-title">
+        <div class="section-header">
+          <div>
+            <p class="section-kicker">Resumo</p>
+            <h2 id="summary-title">Visao geral</h2>
+          </div>
+          <p class="section-note">
+            Atualizado apos o calculo. Compare amortizacao e juros totais.
+          </p>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span>Sistema</span>
+            <strong id="summary-system">-</strong>
+          </div>
+          <div class="summary-item">
+            <span>Parcela / Amortizacao base</span>
+            <strong id="summary-base">-</strong>
+          </div>
+          <div class="summary-item">
+            <span>Total pago</span>
+            <strong id="summary-total">-</strong>
+          </div>
+          <div class="summary-item">
+            <span>Total de juros</span>
+            <strong id="summary-interest">-</strong>
+          </div>
+          <div class="summary-item">
+            <span>Saldo final</span>
+            <strong id="summary-final">-</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="table-title">
+        <div class="section-header">
+          <div>
+            <p class="section-kicker">Tabela</p>
+            <h2 id="table-title">Cronograma de pagamento</h2>
+          </div>
+          <p class="section-note">
+            Cada periodo mostra o saldo devedor inicial, juros, amortizacao e
+            parcela.
+          </p>
+        </div>
+        <div class="table-wrap" role="region" aria-live="polite">
+          <table class="result-table">
+            <thead>
+              <tr>
+                <th>Periodo</th>
+                <th>Saldo inicial</th>
+                <th>Amortizacao</th>
+                <th>Juros</th>
+                <th>Prestacao</th>
+                <th>Saldo final</th>
+              </tr>
+            </thead>
+            <tbody id="result-body">
+              <tr class="placeholder">
+                <td colspan="6">
+                  Preencha os dados acima e clique em "Calcular tabela".
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <p>
+          Calculadora estatica para SAC e Price. Valores arredondados apenas para
+          exibicao. Formulas conforme SAC e Price (sistema frances).
+        </p>
+      </div>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
