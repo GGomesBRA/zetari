@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculadora SAC e Price</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">Financiamentos com clareza</p>
+        <h1>Calculadora SAC &amp; Price</h1>
+        <p class="lead">
+          Compare rapidamente as tabelas de amortização nos sistemas SAC e Price,
+          com valores em R$ e detalhamento por período.
+        </p>
+      </div>
+      <div class="hero-panel">
+        <div class="metric">
+          <span class="metric-label">Precisão</span>
+          <strong>2 casas</strong>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Formato</span>
+          <strong>BRL</strong>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Tabela</span>
+          <strong>Completa</strong>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="card">
+        <h2>Entradas</h2>
+        <form id="calc-form" class="form">
+          <div class="field">
+            <label for="pv">Valor financiado (PV)</label>
+            <input id="pv" name="pv" type="text" inputmode="decimal" placeholder="Ex: 250.000,00" required />
+          </div>
+          <div class="field">
+            <label for="rate">Taxa de juros por período (i)</label>
+            <div class="input-suffix">
+              <input id="rate" name="rate" type="text" inputmode="decimal" placeholder="Ex: 1,5" required />
+              <span>%</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="periods">Número de períodos (n)</label>
+            <input id="periods" name="periods" type="number" min="1" step="1" placeholder="Ex: 24" required />
+          </div>
+          <div class="field">
+            <span class="label">Sistema</span>
+            <div class="radio-group">
+              <label class="radio">
+                <input type="radio" name="system" value="sac" checked />
+                <span>SAC (amortização constante)</span>
+              </label>
+              <label class="radio">
+                <input type="radio" name="system" value="price" />
+                <span>Price (prestação constante)</span>
+              </label>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="primary">Calcular tabela</button>
+            <button type="button" id="clear-btn" class="ghost">Limpar</button>
+          </div>
+          <p id="error" class="error" role="alert" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card results">
+        <div class="results-header">
+          <div>
+            <h2>Resultados</h2>
+            <p id="result-summary" class="summary">Preencha os campos para gerar a tabela.</p>
+          </div>
+          <div class="pill" id="system-pill">SAC</div>
+        </div>
+        <div class="table-wrapper">
+          <table id="results-table">
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Saldo devedor inicial</th>
+                <th>Amortização</th>
+                <th>Juros</th>
+                <th>Prestação</th>
+                <th>Saldo devedor final</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="empty-row">
+                <td colspan="6">Nenhum cálculo realizado.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Calculadora estática para SAC e Price. Valores arredondados apenas na exibição.</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
