@@ -1,0 +1,570 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Calculadora SAC / Price</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f4f7f9;
+        --surface: #ffffff;
+        --surface-muted: #eef3f6;
+        --primary: #0b2b3c;
+        --primary-2: #0f4153;
+        --accent: #1f7a5f;
+        --text: #0b1c24;
+        --text-muted: #52646f;
+        --border: #d5dee4;
+        --error: #b42318;
+        --shadow: 0 10px 30px rgba(9, 30, 45, 0.12);
+        --radius: 14px;
+        --radius-sm: 10px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Source Sans 3", "Source Sans Pro", "Segoe UI", system-ui, -apple-system,
+          sans-serif;
+        color: var(--text);
+        background: linear-gradient(135deg, #e7eef2, #f8fbfd 40%, #edf3f7);
+        min-height: 100vh;
+      }
+
+      .page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 20px 60px;
+      }
+
+      header {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 28px;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+        color: var(--primary);
+        letter-spacing: -0.02em;
+      }
+
+      header p {
+        margin: 0;
+        color: var(--text-muted);
+        max-width: 720px;
+      }
+
+      .card {
+        background: var(--surface);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+      }
+
+      .grid {
+        display: grid;
+        gap: 22px;
+      }
+
+      .controls {
+        padding: 22px;
+        display: grid;
+        gap: 18px;
+      }
+
+      form {
+        display: grid;
+        gap: 16px;
+      }
+
+      .field-row {
+        display: grid;
+        gap: 16px;
+      }
+
+      @media (min-width: 780px) {
+        .field-row {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      label {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 6px;
+        display: inline-block;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        font-size: 1rem;
+        background: #fff;
+        transition: border 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--primary-2);
+        box-shadow: 0 0 0 3px rgba(15, 65, 83, 0.15);
+      }
+
+      .input-error {
+        border-color: var(--error);
+        box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.12);
+      }
+
+      .field-error {
+        color: var(--error);
+        font-size: 0.85rem;
+        min-height: 18px;
+        margin-top: 6px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 4px;
+      }
+
+      button {
+        border: none;
+        border-radius: 999px;
+        padding: 12px 22px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+
+      button.primary {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      button.secondary {
+        background: var(--surface-muted);
+        color: var(--primary);
+        border: 1px solid var(--border);
+      }
+
+      .results {
+        padding: 22px;
+        display: grid;
+        gap: 18px;
+      }
+
+      .results-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .results-header h2 {
+        margin: 0;
+        font-size: 1.3rem;
+        color: var(--primary);
+      }
+
+      .badge {
+        background: rgba(31, 122, 95, 0.12);
+        color: var(--accent);
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.85rem;
+      }
+
+      .empty-state {
+        background: var(--surface-muted);
+        border-radius: var(--radius-sm);
+        padding: 18px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 760px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      thead th {
+        text-align: left;
+        background: var(--primary);
+        color: #fff;
+        padding: 12px 14px;
+        font-size: 0.9rem;
+      }
+
+      tbody td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.92rem;
+      }
+
+      tbody tr:nth-child(even) {
+        background: #f6f9fb;
+      }
+
+      .meta {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+
+      .summary-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+      }
+
+      .summary-line span {
+        font-weight: 600;
+        color: var(--primary);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <h1>Calculadora SAC / Price</h1>
+        <p>
+          Simule financiamentos no sistema SAC ou Price. Os cálculos mantêm precisão interna
+          e exibem valores em reais com duas casas decimais.
+        </p>
+      </header>
+
+      <section class="card grid">
+        <div class="controls">
+          <h2 style="margin: 0; color: var(--primary)">Entradas</h2>
+          <form id="calc-form" novalidate>
+            <div class="field-row">
+              <div>
+                <label for="pv">Valor financiado (PV)</label>
+                <input
+                  id="pv"
+                  name="pv"
+                  type="number"
+                  inputmode="decimal"
+                  step="0.01"
+                  placeholder="Ex.: 350000"
+                  aria-describedby="error-pv"
+                />
+                <div class="field-error" id="error-pv" data-error-for="pv" aria-live="polite"></div>
+              </div>
+              <div>
+                <label for="rate">Taxa de juros por período (%)</label>
+                <input
+                  id="rate"
+                  name="rate"
+                  type="number"
+                  inputmode="decimal"
+                  step="0.0001"
+                  placeholder="Ex.: 1,2"
+                  aria-describedby="error-rate"
+                />
+                <div class="field-error" id="error-rate" data-error-for="rate" aria-live="polite"></div>
+              </div>
+            </div>
+            <div class="field-row">
+              <div>
+                <label for="periods">Número de períodos (n)</label>
+                <input
+                  id="periods"
+                  name="periods"
+                  type="number"
+                  inputmode="numeric"
+                  step="1"
+                  placeholder="Ex.: 12"
+                  aria-describedby="error-periods"
+                />
+                <div class="field-error" id="error-periods" data-error-for="periods" aria-live="polite"></div>
+              </div>
+              <div>
+                <label for="system">Sistema</label>
+                <select id="system" name="system" aria-describedby="error-system">
+                  <option value="sac">SAC (amortização constante)</option>
+                  <option value="price">Price (prestação constante)</option>
+                </select>
+                <div class="field-error" id="error-system" data-error-for="system" aria-live="polite"></div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="primary" type="submit">Calcular</button>
+              <button class="secondary" type="button" id="clear-btn">Limpar</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="results">
+          <div class="results-header">
+            <h2>Resultado</h2>
+            <span class="badge" id="system-badge">---</span>
+          </div>
+          <div class="summary-line" id="summary-line" hidden>
+            <div>PV: <span id="summary-pv">-</span></div>
+            <div>Taxa: <span id="summary-rate">-</span></div>
+            <div>Períodos: <span id="summary-periods">-</span></div>
+            <div>Prestação base: <span id="summary-payment">-</span></div>
+          </div>
+          <div class="empty-state" id="empty-state" role="status">
+            Preencha os campos e clique em Calcular para gerar a tabela.
+          </div>
+          <div class="table-wrap" id="table-wrap" hidden>
+            <table aria-label="Tabela de amortização">
+              <thead>
+                <tr>
+                  <th>Período</th>
+                  <th>Saldo devedor inicial</th>
+                  <th>Amortização</th>
+                  <th>Juros</th>
+                  <th>Prestação</th>
+                  <th>Saldo devedor final</th>
+                </tr>
+              </thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
+          <div class="meta" id="result-meta"></div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const form = document.getElementById("calc-form");
+      const clearBtn = document.getElementById("clear-btn");
+      const tableBody = document.getElementById("table-body");
+      const tableWrap = document.getElementById("table-wrap");
+      const emptyState = document.getElementById("empty-state");
+      const resultMeta = document.getElementById("result-meta");
+      const systemBadge = document.getElementById("system-badge");
+      const summaryLine = document.getElementById("summary-line");
+      const summaryPv = document.getElementById("summary-pv");
+      const summaryRate = document.getElementById("summary-rate");
+      const summaryPeriods = document.getElementById("summary-periods");
+      const summaryPayment = document.getElementById("summary-payment");
+      const emptyMessage = "Preencha os campos e clique em Calcular para gerar a tabela.";
+
+      const formatter = new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
+      function formatMoney(value) {
+        const normalized = Math.abs(value) < 1e-8 ? 0 : value;
+        return formatter.format(normalized);
+      }
+
+      function setError(field, message) {
+        const errorEl = document.querySelector(`[data-error-for="${field}"]`);
+        const inputEl = document.getElementById(field);
+        const hasMessage = Boolean(message);
+        if (errorEl) {
+          errorEl.textContent = message || "";
+        }
+        if (inputEl) {
+          if (hasMessage) {
+            inputEl.classList.add("input-error");
+            inputEl.setAttribute("aria-invalid", "true");
+          } else {
+            inputEl.classList.remove("input-error");
+            inputEl.removeAttribute("aria-invalid");
+          }
+        }
+      }
+
+      function clearErrors() {
+        ["pv", "rate", "periods", "system"].forEach((field) => setError(field, ""));
+      }
+
+      function showEmptyState(message) {
+        tableWrap.hidden = true;
+        emptyState.hidden = false;
+        summaryLine.hidden = true;
+        tableBody.innerHTML = "";
+        resultMeta.textContent = "";
+        systemBadge.textContent = "---";
+        emptyState.textContent = message || emptyMessage;
+      }
+
+      function showResults(rows, systemLabel, summary) {
+        tableBody.innerHTML = rows
+          .map(
+            (row) => `
+          <tr>
+            <td>${row.period}</td>
+            <td>${formatMoney(row.startBalance)}</td>
+            <td>${formatMoney(row.amortization)}</td>
+            <td>${formatMoney(row.interest)}</td>
+            <td>${formatMoney(row.payment)}</td>
+            <td>${formatMoney(row.endBalance)}</td>
+          </tr>
+        `
+          )
+          .join("");
+
+        tableWrap.hidden = false;
+        emptyState.hidden = true;
+        systemBadge.textContent = systemLabel;
+        summaryLine.hidden = false;
+        summaryPv.textContent = formatMoney(summary.pv);
+        summaryRate.textContent = `${summary.rate}%`;
+        summaryPeriods.textContent = summary.periods;
+        summaryPayment.textContent = formatMoney(summary.payment);
+        resultMeta.textContent = `Tabela gerada com ${rows.length} períodos.`;
+      }
+
+      function parseNumber(value) {
+        if (value === "" || value === null || value === undefined) return NaN;
+        return Number(value);
+      }
+
+      function validateInputs(pv, rate, periods) {
+        let isValid = true;
+
+        if (!Number.isFinite(pv) || pv <= 0) {
+          setError("pv", "Informe um valor financiado maior que 0.");
+          isValid = false;
+        }
+
+        if (!Number.isFinite(rate) || rate < 0) {
+          setError("rate", "Informe uma taxa maior ou igual a 0.");
+          isValid = false;
+        }
+
+        if (!Number.isFinite(periods) || periods <= 0) {
+          setError("periods", "Informe um número de períodos maior que 0.");
+          isValid = false;
+        } else if (!Number.isInteger(periods)) {
+          setError("periods", "O número de períodos deve ser inteiro.");
+          isValid = false;
+        }
+
+        return isValid;
+      }
+
+      function calculateSAC(pv, rate, periods) {
+        const amortization = pv / periods;
+        let balance = pv;
+        const rows = [];
+
+        for (let t = 1; t <= periods; t += 1) {
+          const interest = balance * rate;
+          const payment = amortization + interest;
+          const endBalance = balance - amortization;
+
+          rows.push({
+            period: t,
+            startBalance: balance,
+            amortization,
+            interest,
+            payment,
+            endBalance,
+          });
+
+          balance = endBalance;
+        }
+
+        return { rows, payment: rows[0]?.payment ?? 0 };
+      }
+
+      function calculatePrice(pv, rate, periods) {
+        let payment = 0;
+        if (rate === 0) {
+          payment = pv / periods;
+        } else {
+          const factor = Math.pow(1 + rate, periods);
+          payment = pv * ((rate * factor) / (factor - 1));
+        }
+
+        let balance = pv;
+        const rows = [];
+
+        for (let t = 1; t <= periods; t += 1) {
+          const interest = balance * rate;
+          const amortization = payment - interest;
+          const endBalance = balance - amortization;
+
+          rows.push({
+            period: t,
+            startBalance: balance,
+            amortization,
+            interest,
+            payment,
+            endBalance,
+          });
+
+          balance = endBalance;
+        }
+
+        return { rows, payment };
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        clearErrors();
+
+        const pv = parseNumber(document.getElementById("pv").value);
+        const ratePercent = parseNumber(document.getElementById("rate").value);
+        const periods = parseNumber(document.getElementById("periods").value);
+        const system = document.getElementById("system").value;
+
+        if (!validateInputs(pv, ratePercent, periods)) {
+          showEmptyState("Corrija os campos destacados para gerar a tabela.");
+          return;
+        }
+
+        const rate = ratePercent / 100;
+        let result;
+
+        if (system === "sac") {
+          result = calculateSAC(pv, rate, periods);
+        } else {
+          result = calculatePrice(pv, rate, periods);
+        }
+
+        showResults(result.rows, system === "sac" ? "SAC" : "Price", {
+          pv,
+          rate: ratePercent.toLocaleString("pt-BR"),
+          periods,
+          payment: result.payment,
+        });
+      });
+
+      clearBtn.addEventListener("click", () => {
+        form.reset();
+        clearErrors();
+        showEmptyState();
+      });
+
+      showEmptyState();
+    </script>
+  </body>
+</html>
